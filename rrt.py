@@ -89,14 +89,14 @@ class Rrt:
         dy = node_end.y - node_start.y
         return math.hypot(dx, dy), math.atan2(dy, dx)
 
+
 def main():
-    
-    x_start = get_coords_from_figure()
+    x_start = get_coords_from_figure(0)
     print(x_start)
-    x_goal = get_coords_from_figure()
+    x_goal = get_coords_from_figure(1)
     print(x_goal)
 
-    rrt = Rrt(x_start, x_goal, 0.5, 0.05, 10000)
+    rrt = Rrt(x_start, x_goal, 0.5, 0.05, 100000)
     path = rrt.planning()
 
     if path:
@@ -104,30 +104,40 @@ def main():
     else:
         print("No Path Found or One Coordinate placed on Obstacle!")
 
+
 def get_start():
     startX = int(input("What are your start x coordinate?"))
     startY = int(input("What are your start y coordinate? "))
     return startX, startY
+
 
 def get_goal():
     goalX = int(input("What are your goal x coordinates?"))
     goalY = int(input("What are your goal y coordinates?"))
     return goalX, goalY
 
-def get_coords_from_figure():
-    ev = None
+coords = []
+def get_coords_from_figure(i):
+    inputx = 0
+    inputy = 0
     def onclick(event):
-        nonlocal ev
-        ev = event
+        global inputx
+        global inputy
+        print("hi")
+        global coords
+        inputx = round(event.xdata)
+        inputy = round(event.ydata)
+        coords.append((inputx, inputy))
     fig, ax = plt.subplots()
-    ax.set_xlim([0,50])
-    ax.set_ylim([0,30])
-    #ax.axvline(x=0.5)      # Placeholder data
+    ax.set_xlim([0, 50])
+    ax.set_ylim([0, 30])
+    # ax.axvline(x=0.5)      # Placeholder data
     cid = fig.canvas.mpl_connect('button_press_event', onclick)
-
     plt.show(block=True)
-    return (ev.xdata, ev.ydata) if ev is not None else None
+    
+    return coords[i]
     # return (ev.x, ev.y) if ev is not None else None
+
 
 if __name__ == '__main__':
     main()

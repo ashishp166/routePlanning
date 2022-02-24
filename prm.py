@@ -111,7 +111,7 @@ def get_nodes(rng, x_start, x_goal):
         #might have to add obstacle kd tree here to make sure point is not too close to obstacle
         util = utils.Utils()
         checker = [px, py]
-        if(util.is_inside_obs(Node(a))):
+        if not util.is_inside_obs(Node(checker)):
             node_x.append(px)
             node_y.append(py)
     node_x.append(x_start[0])
@@ -121,6 +121,39 @@ def get_nodes(rng, x_start, x_goal):
 
     return node_x, node_y
 
+def find_paths(node_x, node_y):
+    road = []
+    num = len(node_x)
+    kd = KDTree(np.vstack((node_x, node_y)).T)
+
+    for(i, x, y) in zip(range(num), node_x, node_y):
+
+        distance, index = kd.query([x, y], k=num)
+        edges_index = []
+        start = [x, y]
+        for j in range(1, len(index)):
+            end_x = node_x[index[j]]
+            end_y = node_y[index[j]]
+
+            util = utils.Utils()
+            end = [end_x, end_y]
+            if not util.is_collision(Node(start), Node(end)):
+                edges_index.append(index[j])
+            if len(edges_index) >= NKNN:
+                break
+        road.append(edges_index)
+    plot(road, node_x, node_y)
+    return road
+
+def plot(road_map, sample_x, sample_y):  # pragma: no cover
+
+    for i, _ in enumerate(road_map):
+        for ii in range(len(road_map[i])):
+            ind = road_map[i][ii]
+
+            plt.plot([sample_x[i], sample_x[ind]],
+                     [sample_y[i], sample_y[ind]], "-k")
+    print("hi")
 def main(rng = None):
     x_start = (2, 2)
     x_goal = (3, 3)
@@ -129,6 +162,9 @@ def main(rng = None):
     #x_goal = get_coords_from_figure()
     print(x_goal)
     node_x, node_y =  get_nodes(rng, x_start, x_goal)
+    print(node_x)
+    possible_roads = find_paths(node_x, node_y)
+    print(possible_roads)
     #prm = PRM(x_start, x_goal, 0.5, 0.05, 10000)
     #path = rrt.planning()
 
@@ -148,10 +184,10 @@ def get_goal():
     return goalX, goalY
 
 def get_coords_from_figure():
-    ev = None
-    def onclick(event):
-        nonlocal ev
-        ev = event
+    #ev = None
+    #def onclick(event):
+        #nonlocal ev
+        #ev = event
     fig, ax = plt.subplots()
     ax.set_xlim([0,50])
     ax.set_ylim([0,30])
